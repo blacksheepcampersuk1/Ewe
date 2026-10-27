@@ -402,7 +402,7 @@
           <div class="viewer-box">
             <model-viewer
               id="cupboard-viewer"
-              src="Twin%20Bench.glb"
+              src="Belted%20Ewe.glb"
               camera-controls
               interaction-prompt="auto"
               interaction-prompt-threshold="2000"
@@ -439,9 +439,9 @@
             <div class="row">
               <span class="row-title">Layout</span>
               <div class="btn-group">
-                <button class="layout-btn active" type="button" data-size="Twin%20Bench.glb">Twin Bench</button>
+                <button class="layout-btn" type="button" data-size="Twin%20Bench.glb">Twin Bench</button>
                 <button class="layout-btn" type="button" data-size="Ewe.glb">Ewe</button>
-                <button class="layout-btn" type="button" data-size="Belted%20Ewe.glb">Belted Ewe</button>
+                <button class="layout-btn active" type="button" data-size="Belted%20Ewe.glb">Belted Ewe</button>
               </div>
             </div>
 
@@ -484,7 +484,7 @@
       <button id="form-modal-close" aria-label="Close form" style="position:absolute; right:12px; top:12px; z-index:5; padding:8px 10px; border-radius:6px; border:1px solid #ddd; background:#fff;">
         ✕
       </button>
-      <div id="form-modal-spinner" style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.95)); z-index:2;">
+      <div id="form-modal-spinner" style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.95)); font-size:18px; color:#333; font-weight:600;">
         Loading…
       </div>
       <iframe id="form-modal-iframe" src="" frameborder="0" title="Quote form" style="width:100%; height:100%; border:0; display:block;"></iframe>
@@ -496,7 +496,7 @@
     const spinner = document.querySelector('#viewer-spinner');
     const viewControls = document.querySelector('#view-controls');
 
-    let selectedModel = 'Twin%20Bench.glb';
+    let selectedModel = 'Belted%20Ewe.glb';
     let selectedPackage = 'Furniture Only';
     let selectedCushions = 'Without%20Cushions';
     let selectedDoor = 'Green';
@@ -788,7 +788,7 @@
             <li>A u-shape seating area that folds out into a large bed, big enough for two. With plenty of storage, and even a designated area to have your own portable toilet.</li>
             <li>A diesel heater</li>
             <li>Cushions with your choice of fabric</li>
-            <li>A charging system to keep you batteries charged up, whether that is utilising your vans alternator via DC-DC charging, solar panels, shore power via a hook-up point, or all of the possibilities available in a bespoke conversion.</li>
+            <li>A charging system to keep you batteries charged up, whether that is utilising your vans alternator via DC-DC charging, solar panels, shore power via a hook-up point, or all of the above.</li>
             <li>An electrical system to suit your needs, including 12V charging points, ceiling lights, reading lights and 240V plug sockets.</li>
           </ul>
         `;
@@ -998,54 +998,49 @@
 
     document.querySelectorAll('.door-btn').forEach((button) => {
       button.addEventListener('click', (e) => {
-        const clickedDoor = e.target.getAttribute('data-door');
-
-        document.querySelectorAll('.door-btn').forEach((btn) => {
-          const isHexaSelected = clickedDoor === 'Hexa ply';
-          const btnDoor = btn.getAttribute('data-door');
-          btn.classList.toggle(
-            'active',
-            (btnDoor === clickedDoor) || (isHexaSelected && btnDoor === 'Hexa ply')
-          );
-        });
-
-        selectedDoor = clickedDoor;
-        selectedMaterial = clickedDoor === 'Hexa ply' ? 'Hexa ply' : 'Laminate';
+        const nextDoor = e.target.getAttribute('data-door');
+        if (!nextDoor) return;
+        selectedDoor = nextDoor;
+        document.querySelectorAll('.door-btn').forEach((btn) => btn.classList.remove('active'));
+        e.target.classList.add('active');
         applyVariant(selectedDoor);
       });
     });
 
     document.querySelectorAll('[data-rotate]').forEach((button) => {
-      button.addEventListener('click', (e) => {
-        const direction = e.currentTarget.getAttribute('data-rotate');
-        rotateBy(direction === 'left' ? -45 : 45);
+      button.addEventListener('click', () => {
+        const rotateDir = button.getAttribute('data-rotate');
+        rotateBy(rotateDir === 'right' ? 45 : -45);
       });
     });
 
     document.getElementById('request-quote-btn')?.addEventListener('click', () => {
+      const quoteFormUrl = 'https://forms.gle/your-form-link';
       const modal = document.getElementById('form-modal');
       const iframe = document.getElementById('form-modal-iframe');
       const spinner = document.getElementById('form-modal-spinner');
-      const formUrl = 'https://example.com';
 
-      if (!modal || !iframe || !spinner) return;
-
-      iframe.src = formUrl;
-      modal.style.display = 'flex';
-      spinner.style.display = 'flex';
-
-      iframe.addEventListener('load', () => {
-        spinner.style.display = 'none';
-      }, { once: true });
+      if (modal && iframe) {
+        iframe.src = quoteFormUrl;
+        modal.style.display = 'flex';
+        spinner.style.display = 'flex';
+        iframe.onload = () => {
+          spinner.style.display = 'none';
+        };
+      }
     });
 
     document.getElementById('form-modal-close')?.addEventListener('click', () => {
       const modal = document.getElementById('form-modal');
-      if (!modal) return;
-      modal.style.display = 'none';
-      document.getElementById('form-modal-iframe').src = '';
+      if (modal) {
+        modal.style.display = 'none';
+        document.getElementById('form-modal-iframe').src = '';
+      }
     });
 
+    syncModelButtons(selectedModel);
+    syncPackageButtons(selectedPackage);
+    syncCushionButtons();
     updateProductTitle();
     updatePriceDisplay();
     updateDescription();
